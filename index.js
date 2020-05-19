@@ -1,18 +1,18 @@
 const Discord = require("discord.js");
-const { prefix, token } = require("./config.json"); //Prefix is the sympol you type before the command for example !play in rythm I can't show you the file as it's contain my token :D
+const { prefix, token } = require("./config.json"); //Prefix is the symbol you type before the command for example !play in rythm I can't show you the file as it's contain my token :D
 const client = new Discord.Client();
-const http = require("http");
-http.createServer((req, res) => {
-    res.writeHead(200, {
-        "Content-type": "text/plain"
-    });
+const http = require('http');
+const express = require('express');
+const app = express();
+app.get("/", (request, response) => {
+  console.log(Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+setInterval(() => {
+  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
+}, 280000);
 
-    res.writeHead(200, {
-        "Content-type": "text/plain"
-    });
-    res.write("Hey");
-    res.end();
-}).listen(4000);
 
 client.once("ready", () => {
     console.log("Ready!");
@@ -44,6 +44,29 @@ client.on("message", message => {
         }
         if(message.content.startsWith(`${prefix}help`)) {
             message.channel.send("Sorry, this bot is under construction");
+        }
+    }
+  
+      if(message.content.startsWith(`${prefix}admit`)) {
+        let toAdmit = message.mentions.members.first();
+        let member = message.guild.roles.find(role => role.name === 'Member');
+        let newMember = message.guild.roles.find(role => role.name === 'NEW-MEMBER');
+        let admitted = new Discord.RichEmbed();
+        admitted.setAuthor(message.author.username, toAdmit.displayAvatarURL).
+        setColor('RANDOM').
+        setDescription(`${toAdmit} was admitted by ${message.author.username}`)
+        .setImage(toAdmit.avatarURL);
+        if(message.member.roles.some(role => role.name === 'Minor Staff Permissions')
+          || message.member.roles.some(role => role.name === 'Staff-Ping')) {
+            toAdmit.addRole(member);
+            toAdmit.removeRole(newMember)
+            .catch(() => {
+              message.channel.send("Something went wrong");
+            });
+            setTimeout(() => {
+              client.channels.get('668991257170935818').send(admitted)
+            }, 4000);
+            
         }
     }
     // if(message.author.id === client.user.id) {
